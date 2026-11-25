@@ -1,3 +1,19 @@
+/*
+  Avisador de chamadas do WhatsApp
+  Arduino UNO + HC-05 + LCD 16x2 (sem I2C) + buzzer
+
+  Recebe pelo Bluetooth linhas no formato:  CALL:Nome\n
+  Mostra "Chamada WhatsApp" e o nome no LCD e toca o buzzer por 20 s.
+  Letras acentuadas (UTF-8) são convertidas para a letra simples,
+  porque o LCD 16x2 não exibe acentos.
+
+  Ligações:
+    HC-05 TX  -> pino 10
+    HC-05 RX  <- pino 11 (com divisor de tensão 1k + 2k)
+    Buzzer    -> pino 8
+    LCD: RS=7, E=6, D4=5, D5=4, D6=3, D7=2
+*/
+
 #include <SoftwareSerial.h>
 #include <LiquidCrystal.h>
 
@@ -22,7 +38,7 @@ void loop() {
   while (bt.available()) {
     int c = bt.read();
 
-    if (c == 0xC3) {              // primeiro byte de letra acentuada
+    if (c == 0xC3) {              // primeiro byte de letra acentuada (UTF-8)
       prefixoUtf = true;
       continue;
     }
@@ -42,11 +58,11 @@ void loop() {
 
   if (emChamada) {
     unsigned long agora = millis();
-    if (agora - ultimoBip >= 1000) {
+    if (agora - ultimoBip >= 1000) {       // bip a cada 1 segundo
       tone(BUZZER, 1000, 400);
       ultimoBip = agora;
     }
-    if (agora - inicioChamada >= 20000) {
+    if (agora - inicioChamada >= 20000) {  // para depois de 20 segundos
       emChamada = false;
       noTone(BUZZER);
       mostrarEspera();
@@ -54,7 +70,9 @@ void loop() {
   }
 }
 
-char semAcento(int b) { //remove eventuais acentuações nos nomes 
+// Converte o segundo byte de uma letra acentuada UTF-8 (após 0xC3)
+// na letra simples correspondente.
+char semAcento(int b) {
   if (b >= 0x80 && b <= 0x85) return 'A';
   if (b == 0x87) return 'C';
   if (b >= 0x88 && b <= 0x8B) return 'E';
@@ -78,12 +96,12 @@ void tratar(String msg) {
     String nome = msg.substring(5);
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Chamada ");
+    lcd.print("Chamada WhatsApp");
     lcd.setCursor(0, 1);
     lcd.print(nome.substring(0, 16));
     emChamada = true;
     inicioChamada = millis();
-    ultimoBip = millis() - 1000;
+    ultimoBip = millis() - 1000;  // força o primeiro bip na hora
   }
 }
 

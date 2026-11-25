@@ -79,7 +79,7 @@ Divisor de tensão para o RX (o RX do HC-05 trabalha com 3,3 V): `pino 11 → re
 
 ## 2. Código do Arduino
 
-O código está em [`aviso_chamada/aviso_chamada.ino`](aviso_chamada/aviso_chamada.ino).
+O código está em [`main.ino`](main.ino).
 
 1. Abra o arquivo na **Arduino IDE** (as bibliotecas `SoftwareSerial` e `LiquidCrystal` já vêm instaladas).
 2. Escolha a placa **Arduino Uno** e a porta, e clique em Enviar.
